@@ -1,0 +1,63 @@
+Jonathan Ly
+
+==================================+--------------+===================================
+==================================| Descriptions |===================================
+==================================+--------------+===================================
+
+Lab 1 was centered around the basic building blocks that allow the DBMS to interface 
+with and read information off of disk and into memory, along with simple methods that 
+push data through the system.
+
+TupleDesc/Tuple: The most basic element of the DBMS, stores information about a tuple
+such as the fields and types of the fields (TupleDesc class) as well as the actual 
+values and identifier that are in each tuple (Tuple class). Includes utility methods 
+to get information about the tuples as well as merging tuple descriptions.
+
+Catalog: Manages all the tables in the database. Contains references to a table's 
+schema (a TupleDesc), a DbFile, and the table name, id, and primary key.
+
+BufferPool: The first place to look for a page. BufferPool is responsible for caching
+pages which are recently needed. In particular, HeapFile relies on BufferPool when
+asking for a new page, calling Database.getBufferPool().getPage(), which prompts the
+BufferPool to look for the page in its cache, or pull a new one into its cache. In
+turn, BufferPool also relies on HeapFile to actually read the pages that are not yet
+in cache.
+
+HeapPageId: An identifier for a single HeapPage. Each HeapPage is uniquely identified 
+by its table ID and the page number it resides on.
+
+RecordId: An identifier for a single Tuple. Each Tuple is uniquely identified by the
+id of the page it resides on and the index of said tuple on that page.
+
+HeapPage: A single page in a HeapFile. This consists of the header, which stores in-
+formation about which tuple slots are occupied, and the actual tuples stored on the 
+page. HeapFile relies on HeapPage to provide iterators for the page it references.
+
+HeapFile: A single database file, likely containing multiple pages. As described be-
+fore, HeapFile relies on BufferPool to acquire and send HeapPages to be processed,
+and also sends BufferPool pages that are to be cached.
+
+SeqScan: A simple sequential scan operator. Reads and returns Tuples from a table 
+given the table's id. Essentially one of the lowest level operators, returning all 
+of the tuples in a table without any extra processing.
+
+=================================+------------------+=================================
+=================================| Design Decisions |=================================
+=================================+------------------+=================================
+
+One major design decision was made.
+
+- Catalog.java makes use of a helper class Table, which is implemented to gather info
+  about a single table into a single object. In particular, the name, file that the 
+  table is stored on, and its primary key are stored. Originally, this class also used
+  an id field, but it turned out to be easier and less error-prone to simply store a 
+  separate mapping for name |-> tableid.
+
+====================================+------------+=================================
+====================================| Unit Tests |=================================
+====================================+------------+=================================
+
+One test that may be useful is a test for invalid inputs of HeapPage.isSlotUsed().
+I ended up running into an issue later that involved reading invalid indices of the
+header. This ended up being due to issues caused by integer division, but it did
+not throw any errors until I was nearly done with the lab.
